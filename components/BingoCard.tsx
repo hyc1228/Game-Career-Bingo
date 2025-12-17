@@ -14,18 +14,16 @@ interface BingoCardProps {
 
 export const BingoCard: React.FC<BingoCardProps> = ({ item, isMarked, isHinted, isVoted, playerAvatar, onToggleMark, onSelect }) => {
   const [isPressing, setIsPressing] = useState(false);
-  const [isPopping, setIsPopping] = useState(false); // New state for click feedback
+  const [isPopping, setIsPopping] = useState(false);
   const [progress, setProgress] = useState(0);
 
   const pressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const popTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
-  const PRESS_DURATION = 1000; // Faster mark time (1s) feels snappier
+  const PRESS_DURATION = 1000;
 
   const handlePointerDown = (e: React.PointerEvent) => {
-    if (isMarked) return;
-    
     setIsPressing(true);
     setProgress(0);
     
@@ -54,10 +52,8 @@ export const BingoCard: React.FC<BingoCardProps> = ({ item, isMarked, isHinted, 
   };
 
   const handlePointerUp = () => {
-    if (isMarked) return;
     if (isPressing && progress < 100) {
       if (progress < 30) { 
-         // Trigger click feedback animation
          setIsPopping(true);
          if (popTimerRef.current) clearTimeout(popTimerRef.current);
          popTimerRef.current = setTimeout(() => setIsPopping(false), 300);
@@ -78,27 +74,21 @@ export const BingoCard: React.FC<BingoCardProps> = ({ item, isMarked, isHinted, 
     }
   };
 
-  // Cleanup pop timer
   useEffect(() => {
       return () => {
           if (popTimerRef.current) clearTimeout(popTimerRef.current);
       }
   }, []);
 
-  // Modern, Clean Design Style (Less Cartoonish)
   const getStyle = () => {
       if (isMarked) {
-          // Elegant dark/colored fill for marked state
           return 'bg-indigo-600 border-indigo-800 text-white shadow-inner';
       }
-      
-      // Clean white styling with subtle hints
       return 'bg-white border-slate-200 hover:border-indigo-300 text-slate-700 shadow-sm';
   };
 
   const renderIcon = () => {
       const size = 18;
-      // Icons provide the color pop
       if (isMarked) return null;
 
       switch(item.category) {
@@ -140,7 +130,6 @@ export const BingoCard: React.FC<BingoCardProps> = ({ item, isMarked, isHinted, 
       onPointerLeave={handlePointerLeave}
       onContextMenu={(e) => e.preventDefault()}
     >
-      {/* Voted Indicator */}
       {isVoted && !isMarked && (
           <div className="absolute -top-2 -right-2 w-7 h-7 bg-white rounded-full shadow-md border-2 border-pink-400 flex items-center justify-center z-20 animate-bounce">
               {playerAvatar.length > 10 ? (
@@ -151,11 +140,10 @@ export const BingoCard: React.FC<BingoCardProps> = ({ item, isMarked, isHinted, 
           </div>
       )}
 
-      {/* Progress Ring or Overlay for Long Press */}
-      {isPressing && !isMarked && (
-         <div className="absolute inset-0 bg-indigo-50/50 rounded-2xl overflow-hidden pointer-events-none">
+      {isPressing && (
+         <div className="absolute inset-0 bg-indigo-50/50 rounded-2xl overflow-hidden pointer-events-none z-10">
              <div 
-                className="absolute bottom-0 left-0 right-0 bg-indigo-200/50 transition-all ease-linear"
+                className={`absolute bottom-0 left-0 right-0 ${isMarked ? 'bg-indigo-900/60' : 'bg-indigo-200/50'} transition-all ease-linear`}
                 style={{ height: `${progress}%`, transitionDuration: '20ms' }}
              />
          </div>

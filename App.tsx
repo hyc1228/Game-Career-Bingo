@@ -5,7 +5,7 @@ import { SeededRNG } from './utils/rng';
 import { BingoCard } from './components/BingoCard';
 import { WinModal } from './components/WinModal';
 import { QuestionModal } from './components/QuestionModal';
-import { Gamepad2, Users, Play, Hash, Upload, Image as ImageIcon } from 'lucide-react';
+import { Gamepad2, Users, Play, Hash, Upload } from 'lucide-react';
 
 // Winning combinations indices for 4x4 grid
 const WIN_LINES = [
@@ -17,12 +17,11 @@ const WIN_LINES = [
   [0, 5, 10, 15], [3, 6, 9, 12]
 ];
 
-// Reduced to 5 Hearts as requested
 const PRESET_AVATARS = ['❤️', '💛', '💚', '💙', '💜'];
 
 export default function App() {
   const [view, setView] = useState<ViewState>(ViewState.LANDING);
-  const [seedInput, setSeedInput] = useState('');
+  const [seedInput, setSeedInput] = useState(''); 
   const [selectedCard, setSelectedCard] = useState<BingoItem | null>(null);
   const [hintIndex, setHintIndex] = useState<number | null>(null);
   const [votedIndex, setVotedIndex] = useState<number | null>(null);
@@ -39,14 +38,11 @@ export default function App() {
     playerAvatar: PRESET_AVATARS[0]
   });
 
-  // Idle Timer Logic
   const lastInteractionRef = useRef<number>(Date.now());
   
   useEffect(() => {
-    // Reset interaction timer on any user action
     const handleInteraction = () => {
       lastInteractionRef.current = Date.now();
-      // Only clear hint if it exists, to avoid unnecessary state updates
       if (hintIndex !== null) setHintIndex(null);
     };
 
@@ -54,13 +50,9 @@ export default function App() {
     window.addEventListener('keydown', handleInteraction);
     window.addEventListener('mousemove', handleInteraction);
 
-    // Check for idle every 1s
     const idleCheckInterval = setInterval(() => {
-      // Logic update: Only set a hint if we don't already have one (avoids flashing)
-      // And only if game is not won/doing winning animation
       if (view === ViewState.GAME && !gameState.isComplete && !winningLine && !selectedCard && hintIndex === null) {
         if (Date.now() - lastInteractionRef.current > 5000) {
-          // If idle > 5s and no hint is active, pick a random unmarked card
           const unmarked = gameState.items
             .map((_, i) => i)
             .filter(i => !gameState.markedIndices.includes(i));
@@ -81,7 +73,6 @@ export default function App() {
     };
   }, [view, gameState, selectedCard, hintIndex, winningLine]);
 
-  // Check for win condition
   useEffect(() => {
     if (view === ViewState.GAME && !gameState.isComplete && !winningLine) {
        const winLine = WIN_LINES.find(line => 
@@ -90,7 +81,6 @@ export default function App() {
 
        if (winLine) {
          setWinningLine(winLine);
-         // Play animation for 2 seconds before showing the modal
          setTimeout(() => {
              setGameState(prev => ({
                ...prev,
@@ -114,10 +104,9 @@ export default function App() {
   };
 
   const startGame = (customSeed: string) => {
-    const finalSeed = customSeed.trim() || Math.random().toString(36).substring(7).toUpperCase();
+    // If empty, generate a random 5-character code
+    const finalSeed = customSeed.trim() || Math.random().toString(36).substring(2, 7).toUpperCase();
     const rng = new SeededRNG(finalSeed);
-    
-    // Select 16 unique random items
     const shuffledPool = rng.shuffle(BINGO_POOL);
     const selectedItems = shuffledPool.slice(0, 16);
 
@@ -130,7 +119,6 @@ export default function App() {
       isComplete: false,
       playerAvatar: tempAvatar
     });
-    setSeedInput(finalSeed); // Sync input
     setWinningLine(null);
     setVotedIndex(null);
     setView(ViewState.GAME);
@@ -145,7 +133,6 @@ export default function App() {
         ? prev.markedIndices.filter(i => i !== index)
         : [...prev.markedIndices, index];
       
-      // If marking, remove the vote visual as it's now done
       if (!isMarked && votedIndex === index) {
           setVotedIndex(null);
       }
@@ -170,15 +157,12 @@ export default function App() {
 
   const getLineCoordinates = (indices: number[]) => {
       if (!indices || indices.length === 0) return { x1: 0, y1: 0, x2: 0, y2: 0 };
-      
-      // Assumes 4x4 grid
       const startIdx = indices[0];
       const endIdx = indices[indices.length - 1];
       
       const getCoord = (idx: number) => {
           const col = idx % 4;
           const row = Math.floor(idx / 4);
-          // Center of cell: (col * 25 + 12.5)%, (row * 25 + 12.5)%
           return {
               x: `${col * 25 + 12.5}%`,
               y: `${row * 25 + 12.5}%`
@@ -193,18 +177,13 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col items-center pb-8 overflow-hidden relative">
-      
-      {/* Background Texture - Animated */}
       <div className="fixed inset-0 pointer-events-none bg-pattern-moving z-0 opacity-50"></div>
-
-      {/* Background Particles/Decoration */}
       <div className="fixed inset-0 pointer-events-none opacity-30 z-0">
          <div className="absolute top-10 left-10 w-24 h-24 bg-purple-500 rounded-full blur-3xl animate-float"></div>
          <div className="absolute bottom-20 right-10 w-40 h-40 bg-blue-500 rounded-full blur-3xl animate-float" style={{animationDelay: '1s'}}></div>
          <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-fuchsia-500 rounded-full blur-3xl opacity-20 -translate-x-1/2 -translate-y-1/2"></div>
       </div>
 
-      {/* Header */}
       <header className="w-full max-w-md p-4 flex items-center justify-between relative z-20">
         <div className="flex items-center gap-3 bg-purple-900/60 backdrop-blur-md px-4 py-2 rounded-2xl shadow-lg border border-purple-500/50">
            {view === ViewState.GAME && (
@@ -217,10 +196,7 @@ export default function App() {
              </div>
            )}
            {view === ViewState.LANDING && <Gamepad2 className="text-yellow-400" size={24} />}
-           
-           <h1 className="font-cartoon text-xl font-bold text-white tracking-wide drop-shadow-md">
-             DesignBingo
-           </h1>
+           <h1 className="font-cartoon text-xl font-bold text-white tracking-wide drop-shadow-md">DesignBingo</h1>
         </div>
         
         {view === ViewState.GAME && (
@@ -232,37 +208,23 @@ export default function App() {
       </header>
 
       <main className="flex-1 w-full max-w-lg p-4 flex flex-col justify-center relative z-10">
-        
-        {/* Landing View */}
         {view === ViewState.LANDING && (
           <div className="flex flex-col gap-6 animate-pop">
-            
-            {/* COMPACT HERO SECTION */}
             <div className="bg-white rounded-[24px] p-6 shadow-[0_6px_0_rgba(0,0,0,0.15)] flex items-center gap-5 border-4 border-white">
-               {/* Hero Icon */}
                <div className="relative w-16 h-16 flex-shrink-0">
                  <div className="absolute inset-0 bg-pink-400 rounded-2xl blur-md opacity-50"></div>
                  <div className="w-16 h-16 bg-gradient-to-br from-pink-300 to-rose-500 rounded-2xl flex items-center justify-center shadow-lg transform -rotate-3 hover:rotate-3 transition-transform relative z-10 border-2 border-white">
                     <Users className="w-8 h-8 text-white drop-shadow-md" strokeWidth={2.5} />
                  </div>
                </div>
-               
                <div className="flex flex-col items-start text-left">
-                 <h2 className="font-cartoon text-2xl font-black text-slate-800 leading-none mb-1">
-                   Co-op Quest
-                 </h2>
-                 <p className="text-slate-400 font-bold text-sm leading-tight">
-                   Discover your superpowers.
-                 </p>
+                 <h2 className="font-cartoon text-2xl font-black text-slate-800 leading-none mb-1">Co-op Quest</h2>
+                 <p className="text-slate-400 font-bold text-sm leading-tight">Discover your superpowers.</p>
                </div>
             </div>
 
-            {/* Avatar Selector */}
             <div className="bg-white/90 backdrop-blur-sm p-6 rounded-[28px] shadow-lg border-2 border-purple-300 space-y-4">
-               <label className="block text-center font-cartoon font-bold text-purple-900 uppercase tracking-wider text-sm">
-                  Choose Your Hero
-               </label>
-               
+               <label className="block text-center font-cartoon font-bold text-purple-900 uppercase tracking-wider text-sm">Choose Your Hero</label>
                <div className="flex justify-center gap-3 flex-wrap">
                   {PRESET_AVATARS.map((avatar) => (
                     <button
@@ -292,31 +254,27 @@ export default function App() {
                </div>
             </div>
 
-            {/* Room Code */}
             <div className="bg-white/90 backdrop-blur-sm p-6 rounded-[28px] shadow-lg border-2 border-purple-300 space-y-4">
-              <label className="block text-center font-cartoon font-bold text-purple-900 uppercase tracking-wider text-sm">
-                Enter Room Code
-              </label>
+              <label className="block text-center font-cartoon font-bold text-purple-900 uppercase tracking-wider text-sm">Enter Room Code</label>
               <input 
                 type="text" 
                 value={seedInput}
                 onChange={(e) => setSeedInput(e.target.value.toUpperCase())}
-                placeholder="GAMEJAM"
+                placeholder="HELLO"
                 className="w-full bg-slate-100 border-2 border-transparent focus:border-pink-400 focus:bg-white rounded-xl py-4 text-center font-cartoon text-3xl font-black text-purple-700 outline-none transition-all placeholder:text-slate-300"
               />
             </div>
 
             <button 
               onClick={() => startGame(seedInput)}
-              className="w-full bg-gradient-to-b from-pink-400 to-rose-500 hover:from-pink-300 hover:to-rose-400 text-white border-b-8 border-rose-700 active:border-b-0 active:translate-y-2 transition-all font-cartoon font-black text-xl py-5 rounded-2xl shadow-xl flex items-center justify-center gap-3 text-shadow-sm"
+              className="group w-full bg-gradient-to-b from-pink-400 to-rose-500 hover:from-pink-300 hover:to-rose-400 text-white border-b-8 border-rose-700 active:border-b-0 active:translate-y-2 transition-all font-cartoon font-black text-xl py-5 rounded-2xl shadow-xl flex items-center justify-center gap-3 text-shadow-sm hover:scale-[1.02] active:scale-95 duration-200 animate-float"
             >
-              <Play fill="currentColor" />
+              <Play fill="currentColor" className="group-hover:scale-125 transition-transform" />
               START GAME
             </button>
           </div>
         )}
 
-        {/* Game View */}
         {view === ViewState.GAME && (
           <div className="w-full max-w-md mx-auto relative">
              <div className="grid grid-cols-4 gap-2 md:gap-3 mb-6 perspective-1000 relative z-10">
@@ -333,7 +291,6 @@ export default function App() {
                    />
                 ))}
                 
-                {/* Winning Line Overlay */}
                 {winningLine && (
                    <div className="absolute inset-0 pointer-events-none z-50">
                      <svg className="w-full h-full overflow-visible">
@@ -356,13 +313,12 @@ export default function App() {
                  </div>
                  <div className="bg-purple-900/50 backdrop-blur shadow-lg px-4 py-2 rounded-xl text-xs font-bold text-white flex items-center gap-2 border border-purple-400/30">
                     <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-                    Hold 2s to Mark
+                    Hold 1s to Toggle
                  </div>
              </div>
           </div>
         )}
 
-        {/* Modals */}
         {selectedCard && (
             <QuestionModal 
                 item={selectedCard} 
