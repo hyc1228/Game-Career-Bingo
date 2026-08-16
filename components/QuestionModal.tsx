@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { BingoItem } from '../types';
 import { Sparkles, X, MessageCircle, Key, Gamepad2 } from 'lucide-react';
+import { useLanguage } from '../i18n/LanguageContext';
+import { LOADING_MESSAGES, StringKey } from '../i18n/strings';
 
 interface QuestionModalProps {
   item: BingoItem;
@@ -8,29 +10,25 @@ interface QuestionModalProps {
   onClose: () => void;
 }
 
-const LOADING_MESSAGES = [
-  "Loading Hidden Level...",
-  "Decrypting Lore...",
-  "Spawning Rare Loot...",
-  "Compiling Shaders...",
-  "Unlocking Achievement...",
-  "Rendering Wisdom...",
-  "Buffing Intelligence..."
-];
+const CATEGORY_KEYS: Record<BingoItem['category'], StringKey> = {
+  career: 'categoryCareer',
+  personal: 'categoryPersonal',
+  philosophy: 'categoryPhilosophy',
+  creative: 'categoryCreative'
+};
 
 export const QuestionModal: React.FC<QuestionModalProps> = ({ item, onClose }) => {
-  const [displayedHint, setDisplayedHint] = useState<string | null>(null);
+  const { lang, t, tx } = useLanguage();
   const [isLoading, setIsLoading] = useState(true);
 
-  // Pick a random loading message only once on mount
-  const loadingMsg = useMemo(() => {
-    return LOADING_MESSAGES[Math.floor(Math.random() * LOADING_MESSAGES.length)];
+  // Pick a random loading message index only once on mount
+  const loadingMsgIndex = useMemo(() => {
+    return Math.floor(Math.random() * LOADING_MESSAGES.en.length);
   }, []);
 
   useEffect(() => {
     // Simulate "AI Thinking" delay for effect, but use local data (Reliable/Offline)
     const timer = setTimeout(() => {
-      setDisplayedHint(item.fallbackHint);
       setIsLoading(false);
     }, 1500); // 1.5s delay for dramatic effect
 
@@ -64,7 +62,7 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({ item, onClose }) =
                    <MessageCircle size={20} strokeWidth={3} />
                 </div>
                 <h3 className="font-cartoon font-black text-lg uppercase tracking-wide text-shadow-sm">
-                    {item.category} Quest
+                    {t(CATEGORY_KEYS[item.category])} {t('questSuffix')}
                 </h3>
             </div>
             
@@ -80,9 +78,9 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({ item, onClose }) =
         <div className="p-8 bg-slate-50 flex flex-col gap-6 max-h-[70vh] overflow-y-auto">
             
             <div className="text-center space-y-2">
-                <p className="text-slate-400 font-bold uppercase text-xs tracking-widest">Question</p>
+                <p className="text-slate-400 font-bold uppercase text-xs tracking-widest">{t('question')}</p>
                 <p className="font-cartoon text-2xl md:text-3xl font-black text-slate-800 leading-tight">
-                    "{item.question}"
+                    "{tx(item.question)}"
                 </p>
             </div>
 
@@ -90,7 +88,7 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({ item, onClose }) =
             <div className="bg-white rounded-2xl p-6 border-b-4 border-slate-200 relative shadow-sm min-h-[120px] flex flex-col justify-center">
                  <div className="absolute -top-4 left-6 bg-gradient-to-r from-indigo-500 to-purple-600 px-4 py-1.5 rounded-full text-white font-bold text-xs flex items-center gap-2 shadow-md transform -rotate-1">
                     <Key size={14} />
-                    <span className="tracking-widest">SECRET INTEL</span>
+                    <span className="tracking-widest">{t('secretIntel')}</span>
                  </div>
                  
                  {isLoading ? (
@@ -100,12 +98,12 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({ item, onClose }) =
                             <Gamepad2 className="animate-bounce text-purple-600 relative z-10" size={32} />
                          </div>
                          <span className="font-cartoon font-bold text-purple-400 text-lg tracking-wide">
-                            {loadingMsg}
+                            {LOADING_MESSAGES[lang][loadingMsgIndex]}
                          </span>
                      </div>
                  ) : (
                      <p className="font-medium text-lg text-slate-600 leading-relaxed animate-pop">
-                        {displayedHint}
+                        {tx(item.fallbackHint)}
                      </p>
                  )}
             </div>
@@ -114,7 +112,7 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({ item, onClose }) =
         {/* Footer */}
         <div className="bg-slate-100 p-4 text-center border-t border-slate-200">
             <button onClick={onClose} className="text-slate-400 font-bold text-sm hover:text-slate-600 transition-colors">
-                Tap anywhere outside to close
+                {t('tapOutsideToClose')}
             </button>
         </div>
 

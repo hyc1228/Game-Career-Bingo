@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { BingoItem } from '../types';
 import { Check, User, Briefcase, Lightbulb, Palette, Sparkles } from 'lucide-react';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface BingoCardProps {
   item: BingoItem;
@@ -13,6 +14,7 @@ interface BingoCardProps {
 }
 
 export const BingoCard: React.FC<BingoCardProps> = ({ item, isMarked, isHinted, isVoted, playerAvatar, onToggleMark, onSelect }) => {
+  const { tx } = useLanguage();
   const [isPressing, setIsPressing] = useState(false);
   const [isPopping, setIsPopping] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -162,7 +164,7 @@ export const BingoCard: React.FC<BingoCardProps> = ({ item, isMarked, isHinted, 
             
             <div className="flex-1 flex items-center justify-center w-full -mt-1">
                 <p className="font-cartoon text-[11px] md:text-[13px] leading-tight text-center font-bold line-clamp-3 px-1">
-                    {item.shortTitle}
+                    {tx(item.shortTitle)}
                 </p>
             </div>
              <div className="h-2"></div>

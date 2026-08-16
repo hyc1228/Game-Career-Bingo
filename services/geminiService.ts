@@ -1,4 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
+import { Language } from "../types";
 
 let aiClient: GoogleGenAI | null = null;
 
@@ -6,7 +7,7 @@ if (process.env.API_KEY) {
   aiClient = new GoogleGenAI({ apiKey: process.env.API_KEY });
 }
 
-export const generateDeepDive = async (question: string, seedContext: string): Promise<string> => {
+export const generateDeepDive = async (question: string, seedContext: string, lang: Language = 'en'): Promise<string> => {
   if (!aiClient) {
     console.warn("Gemini API Key not found.");
     return "";
@@ -27,6 +28,7 @@ export const generateDeepDive = async (question: string, seedContext: string): P
       - Use RPG/Dev terminology (mechanics, loops, balancing, mana, grinding, endgame).
       - Be concise (max 2 sentences).
       - Make it feel like an "Unlockable Secret" or "Mentor's Wisdom".
+      - Respond in ${lang === 'zh' ? 'Simplified Chinese (简体中文)' : 'English'}.
     `;
 
     const response = await aiClient.models.generateContent({

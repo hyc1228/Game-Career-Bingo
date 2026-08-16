@@ -5,7 +5,8 @@ import { SeededRNG } from './utils/rng';
 import { BingoCard } from './components/BingoCard';
 import { WinModal } from './components/WinModal';
 import { QuestionModal } from './components/QuestionModal';
-import { Gamepad2, Users, Play, Hash, Upload } from 'lucide-react';
+import { Gamepad2, Users, Play, Hash, Upload, Languages } from 'lucide-react';
+import { useLanguage } from './i18n/LanguageContext';
 
 // Winning combinations indices for 4x4 grid
 const WIN_LINES = [
@@ -20,6 +21,7 @@ const WIN_LINES = [
 const PRESET_AVATARS = ['❤️', '💛', '💚', '💙', '💜'];
 
 export default function App() {
+  const { lang, setLang, t } = useLanguage();
   const [view, setView] = useState<ViewState>(ViewState.LANDING);
   const [seedInput, setSeedInput] = useState(''); 
   const [selectedCard, setSelectedCard] = useState<BingoItem | null>(null);
@@ -196,15 +198,25 @@ export default function App() {
              </div>
            )}
            {view === ViewState.LANDING && <Gamepad2 className="text-yellow-400" size={24} />}
-           <h1 className="font-cartoon text-xl font-bold text-white tracking-wide drop-shadow-md">DesignBingo</h1>
+           <h1 className="font-cartoon text-xl font-bold text-white tracking-wide drop-shadow-md">{t('appTitle')}</h1>
         </div>
-        
-        {view === ViewState.GAME && (
-           <div className="flex items-center gap-2 bg-purple-900/60 backdrop-blur-md px-3 py-1.5 rounded-xl shadow-lg font-cartoon font-bold text-purple-100 text-sm border border-purple-500/50">
-             <Hash size={14} className="text-yellow-400" />
-             {gameState.seed}
-           </div>
-        )}
+
+        <div className="flex items-center gap-2">
+          {view === ViewState.GAME && (
+             <div className="flex items-center gap-2 bg-purple-900/60 backdrop-blur-md px-3 py-1.5 rounded-xl shadow-lg font-cartoon font-bold text-purple-100 text-sm border border-purple-500/50">
+               <Hash size={14} className="text-yellow-400" />
+               {gameState.seed}
+             </div>
+          )}
+          <button
+            onClick={() => setLang(lang === 'en' ? 'zh' : 'en')}
+            className="flex items-center gap-1.5 bg-purple-900/60 backdrop-blur-md px-3 py-1.5 rounded-xl shadow-lg font-cartoon font-bold text-purple-100 text-sm border border-purple-500/50 hover:bg-purple-800/70 active:scale-95 transition-all"
+            aria-label="Switch language"
+          >
+            <Languages size={14} className="text-yellow-400" />
+            {t('switchLanguage')}
+          </button>
+        </div>
       </header>
 
       <main className="flex-1 w-full max-w-lg p-4 flex flex-col justify-center relative z-10">
@@ -218,13 +230,13 @@ export default function App() {
                  </div>
                </div>
                <div className="flex flex-col items-start text-left">
-                 <h2 className="font-cartoon text-2xl font-black text-slate-800 leading-none mb-1">Co-op Quest</h2>
-                 <p className="text-slate-400 font-bold text-sm leading-tight">Discover your superpowers.</p>
+                 <h2 className="font-cartoon text-2xl font-black text-slate-800 leading-none mb-1">{t('landingTitle')}</h2>
+                 <p className="text-slate-400 font-bold text-sm leading-tight">{t('landingSubtitle')}</p>
                </div>
             </div>
 
             <div className="bg-white/90 backdrop-blur-sm p-6 rounded-[28px] shadow-lg border-2 border-purple-300 space-y-4">
-               <label className="block text-center font-cartoon font-bold text-purple-900 uppercase tracking-wider text-sm">Choose Your Hero</label>
+               <label className="block text-center font-cartoon font-bold text-purple-900 uppercase tracking-wider text-sm">{t('chooseHero')}</label>
                <div className="flex justify-center gap-3 flex-wrap">
                   {PRESET_AVATARS.map((avatar) => (
                     <button
@@ -255,12 +267,12 @@ export default function App() {
             </div>
 
             <div className="bg-white/90 backdrop-blur-sm p-6 rounded-[28px] shadow-lg border-2 border-purple-300 space-y-4">
-              <label className="block text-center font-cartoon font-bold text-purple-900 uppercase tracking-wider text-sm">Enter Room Code</label>
+              <label className="block text-center font-cartoon font-bold text-purple-900 uppercase tracking-wider text-sm">{t('enterRoomCode')}</label>
               <input 
                 type="text" 
                 value={seedInput}
                 onChange={(e) => setSeedInput(e.target.value.toUpperCase())}
-                placeholder="HELLO"
+                placeholder={t('roomCodePlaceholder')}
                 className="w-full bg-slate-100 border-2 border-transparent focus:border-pink-400 focus:bg-white rounded-xl py-4 text-center font-cartoon text-3xl font-black text-purple-700 outline-none transition-all placeholder:text-slate-300"
               />
             </div>
@@ -270,7 +282,7 @@ export default function App() {
               className="group w-full bg-gradient-to-b from-pink-400 to-rose-500 hover:from-pink-300 hover:to-rose-400 text-white border-b-8 border-rose-700 active:border-b-0 active:translate-y-2 transition-all font-cartoon font-black text-xl py-5 rounded-2xl shadow-xl flex items-center justify-center gap-3 text-shadow-sm hover:scale-[1.02] active:scale-95 duration-200 animate-float"
             >
               <Play fill="currentColor" className="group-hover:scale-125 transition-transform" />
-              START GAME
+              {t('startGame')}
             </button>
           </div>
         )}
@@ -309,11 +321,11 @@ export default function App() {
              <div className="flex justify-center gap-3">
                  <div className="bg-purple-900/50 backdrop-blur shadow-lg px-4 py-2 rounded-xl text-xs font-bold text-white flex items-center gap-2 border border-purple-400/30">
                     <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
-                    Tap to Vote/Open
+                    {t('tapToVote')}
                  </div>
                  <div className="bg-purple-900/50 backdrop-blur shadow-lg px-4 py-2 rounded-xl text-xs font-bold text-white flex items-center gap-2 border border-purple-400/30">
                     <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-                    Hold 1s to Toggle
+                    {t('holdToToggle')}
                  </div>
              </div>
           </div>
